@@ -1,0 +1,26 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Radarr"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Radarr URL"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Radarr API Key"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Sonarr"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Sonarr URL"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Sonarr API Key"
+msgstr ""

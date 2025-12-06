@@ -1,0 +1,9 @@
+{
+    "name": "TMDb Download Helparr",
+    "plugin": "plugin.video.themoviedb.download",
+    "priority": 100,
+    "id": "helparr",
+    "is_resolvable": "true",
+    "play_movie": "plugin://plugin.video.themoviedb.download/?action=play&tmdb_id={tmdb}&type=movie",
+    "play_episode": "plugin://plugin.video.themoviedb.download/?action=play&tmdb_id={tmdb}&type=episode&season={season}&episode={episode}"
+}
