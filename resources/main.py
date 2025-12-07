@@ -160,15 +160,11 @@ def play_placeholder_video(
         return
 
     log(f"Playing video: {video_path}")
-    li = xbmcgui.ListItem(path=video_path)
+    # Use label in ListItem constructor instead of setting InfoTag to avoid database linking issues
+    li = xbmcgui.ListItem(label=title, path=video_path)
 
     # Prevent Kodi from scraping/saving metadata for this playback
     li.setContentLookup(False)
-
-    # Set info to provide a clear title
-    tag = li.getVideoInfoTag()
-    tag.setTitle(title)
-    tag.setMediaType("video")
 
     xbmcplugin.setResolvedUrl(handle, True, li)
 

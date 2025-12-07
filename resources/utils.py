@@ -27,10 +27,6 @@ def install_player():
     )
     dest_path = os.path.join(dest_folder, PLAYER_FILENAME)
 
-    # 1. Check if already installed - fast exit
-    if xbmcvfs.exists(dest_path):
-        return
-
     # 2. Only now setup source path and read content
     source_path = os.path.join(addon_dir, "resources", "players", PLAYER_FILENAME)
 
@@ -45,6 +41,17 @@ def install_player():
     except Exception as e:
         log(f"Read Error: {e}", xbmc.LOGERROR)
         return
+
+    # Check if update is needed
+    if xbmcvfs.exists(dest_path):
+        try:
+            with xbmcvfs.File(dest_path) as f:
+                dest_content = f.read()
+            if source_content == dest_content:
+                # Already up to date
+                return
+        except Exception:
+            pass
 
     # 3. Create folder if needed
     if not xbmcvfs.exists(dest_folder):
