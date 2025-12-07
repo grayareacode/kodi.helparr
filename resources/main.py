@@ -14,10 +14,13 @@ addon_dir = addon.getAddonInfo("path")
 sys.path.insert(0, os.path.join(addon_dir, "resources"))
 
 from client import MediaClient
-from utils import log, notify, PLAYER_FILENAME
+from utils import log, notify, PLAYER_FILENAME, install_player
 
 
 def main():
+    # Ensure player file is installed/updated
+    install_player()
+
     url = sys.argv[0]
     try:
         handle = int(sys.argv[1])
@@ -42,27 +45,6 @@ def main():
     if not action:
         # Root listing
 
-        # Item 1: Play Test Video
-        li = xbmcgui.ListItem(label="Play Test Video")
-        # Fix deprecation: use InfoTagVideo
-        info = li.getVideoInfoTag()
-        info.setTitle("Test Video")
-
-        li.setArt({"icon": "DefaultVideo.png"})
-        li.setProperty("IsPlayable", "true")
-        play_url = url + "?action=test_play"
-        xbmcplugin.addDirectoryItem(
-            handle=handle, url=play_url, listitem=li, isFolder=False
-        )
-
-        # Item 3: Uninstall Player
-        li_uninstall = xbmcgui.ListItem(label="Uninstall Player from TMDbHelper")
-        li_uninstall.setArt({"icon": "DefaultAddon.png"})
-        uninstall_url = url + "?action=uninstall_player"
-        xbmcplugin.addDirectoryItem(
-            handle=handle, url=uninstall_url, listitem=li_uninstall, isFolder=False
-        )
-
         # Item 4: Settings
         li_settings = xbmcgui.ListItem(label="Settings")
         li_settings.setArt({"icon": "DefaultAddon.png"})
@@ -78,15 +60,6 @@ def main():
         addon.openSettings()
         return
 
-    if action == "uninstall_player":
-        uninstall_player()
-        return
-
-    if action == "test_play":
-        # Direct play for testing
-        play_downloading_video(handle, title="Test Video")
-        return
-
     # Handle Main Play Action
     if action == "play":
         tmdb_id = params.get("tmdb_id")
@@ -94,25 +67,6 @@ def main():
         season = params.get("season")
         episode = params.get("episode")
         handle_play_request(handle, tmdb_id, media_type, season, episode)
-
-
-def uninstall_player():
-    dest_folder = xbmcvfs.translatePath(
-        "special://profile/addon_data/plugin.video.themoviedb.helper/players/"
-    )
-    dest_path = os.path.join(dest_folder, PLAYER_FILENAME)
-
-    if xbmcvfs.exists(dest_path):
-        try:
-            xbmcvfs.delete(dest_path)
-            notify("Player uninstalled successfully!", icon=xbmcgui.NOTIFICATION_INFO)
-        except Exception as e:
-            log(f"Uninstall Error: {e}", xbmc.LOGERROR)
-            notify(f"Uninstall failed: {e}", icon=xbmcgui.NOTIFICATION_ERROR)
-    else:
-        notify(
-            "Player not found (already uninstalled?)", icon=xbmcgui.NOTIFICATION_WARNING
-        )
 
 
 def handle_play_request(handle, tmdb_id, media_type, season=None, episode=None):
@@ -158,13 +112,9 @@ def handle_play_request(handle, tmdb_id, media_type, season=None, episode=None):
         elif status in ["requested", "monitored"]:
             # 3. If successfully requested (or monitoring), display notification AND play video.
             notify("Downloading", header=f"{title}", icon=icon, time=5000)
-            play_downloading_video(
+            play_placeholder_video(
                 handle,
                 title=f"Downloading: {title}",
-                tmdb_id=tmdb_id,
-                media_type=media_type,
-                season=season,
-                episode=episode,
             )
         else:
             # Error
@@ -178,13 +128,9 @@ def handle_play_request(handle, tmdb_id, media_type, season=None, episode=None):
         xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
 
 
-def play_downloading_video(
+def play_placeholder_video(
     handle,
     title="Downloading...",
-    tmdb_id=None,
-    media_type=None,
-    season=None,
-    episode=None,
 ):
     images_dir = os.path.join(addon_dir, "resources", "images")
     video_path = None
@@ -219,28 +165,10 @@ def play_downloading_video(
     # Prevent Kodi from scraping/saving metadata for this playback
     li.setContentLookup(False)
 
-    # Set info to prevent marking as watched and provide a clear title
+    # Set info to provide a clear title
     tag = li.getVideoInfoTag()
     tag.setTitle(title)
     tag.setMediaType("video")
-    tag.setPlaycount(0)
-
-    # Force Kodi to treat this as a live stream to ignore duration/watched status
-    li.setProperty("IsLive", "true")
-    li.setProperty("IsRealtimeStream", "true")
-
-    # Set window properties so the service can track this playback
-    # and ensure it isn't marked as watched
-    window = xbmcgui.Window(10000)
-    window.setProperty("helparr_active", "true")
-    if tmdb_id:
-        window.setProperty("helparr_tmdb_id", str(tmdb_id))
-    if media_type:
-        window.setProperty("helparr_media_type", str(media_type))
-    if season:
-        window.setProperty("helparr_season", str(season))
-    if episode:
-        window.setProperty("helparr_episode", str(episode))
 
     xbmcplugin.setResolvedUrl(handle, True, li)
 

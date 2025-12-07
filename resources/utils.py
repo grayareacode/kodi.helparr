@@ -22,11 +22,17 @@ def install_player():
     addon = xbmcaddon.Addon()
     addon_dir = addon.getAddonInfo("path")
 
-    source_path = os.path.join(addon_dir, "resources", "players", PLAYER_FILENAME)
     dest_folder = xbmcvfs.translatePath(
         "special://profile/addon_data/plugin.video.themoviedb.helper/players/"
     )
     dest_path = os.path.join(dest_folder, PLAYER_FILENAME)
+
+    # 1. Check if already installed - fast exit
+    if xbmcvfs.exists(dest_path):
+        return
+
+    # 2. Only now setup source path and read content
+    source_path = os.path.join(addon_dir, "resources", "players", PLAYER_FILENAME)
 
     if not xbmcvfs.exists(source_path):
         log(f"Source player file not found at: {source_path}", xbmc.LOGERROR)
@@ -40,30 +46,19 @@ def install_player():
         log(f"Read Error: {e}", xbmc.LOGERROR)
         return
 
-    # Check if update is needed
-    if xbmcvfs.exists(dest_path):
-        try:
-            with xbmcvfs.File(dest_path) as f:
-                dest_content = f.read()
-            if source_content == dest_content:
-                # Already up to date
-                log("Player already up to date.", xbmc.LOGINFO)
-                return
-        except Exception:
-            # If read failed, proceed to overwrite
-            pass
-
+    # 3. Create folder if needed
     if not xbmcvfs.exists(dest_folder):
         if not xbmcvfs.mkdirs(dest_folder):
             log(f"Create folder failed: {dest_folder}", xbmc.LOGERROR)
             notify("Create folder failed", icon=xbmcgui.NOTIFICATION_ERROR)
             return
 
+    # 4. Write file
     try:
         with xbmcvfs.File(dest_path, "w") as f:
             f.write(source_content)
-        log("Player installed/updated.", xbmc.LOGINFO)
-        notify("TMDb Helper Player Updated", icon=xbmcgui.NOTIFICATION_INFO)
+        log("Player installed.", xbmc.LOGINFO)
+        notify("TMDb Helper Player Installed", icon=xbmcgui.NOTIFICATION_INFO)
     except Exception as e:
         log(f"Install Error: {e}", xbmc.LOGERROR)
         notify(f"Install failed: {e}", icon=xbmcgui.NOTIFICATION_ERROR)
