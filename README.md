@@ -6,7 +6,9 @@ This Kodi addon connects Kodi with Radarr and Sonarr, allowing media that is mis
 
 ## Installation
 
-Todo
+Install in 60 seconds:
+
+https://github.com/user-attachments/assets/2b53ac61-f945-4013-96ed-e875bcb3eb43
 
 ## Configuration
 Open the add-on from the Addons menu, choose **Settings**, and enter your Radarr/Sonarr URLs and API keys. Defaults are `http://localhost:7878` for Radarr and `http://localhost:8989` for Sonarr, but any reachable host will work.
