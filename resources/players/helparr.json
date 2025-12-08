@@ -3,7 +3,7 @@
     "plugin": "plugin.video.themoviedb.download",
     "priority": 100,
     "id": "helparr",
-    "is_resolvable": "false",
+    "is_resolvable": "true",
     "play_movie": "plugin://plugin.video.themoviedb.download/?action=play&tmdb_id={tmdb}&type=movie&ignore=dummy.mp4",
     "play_episode": "plugin://plugin.video.themoviedb.download/?action=play&tmdb_id={tmdb}&type=episode&season={season}&episode={episode}&ignore=dummy.mp4"
 }
