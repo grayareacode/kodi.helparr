@@ -160,13 +160,25 @@ def play_placeholder_video(
         return
 
     log(f"Playing video: {video_path}")
-    # Use label in ListItem constructor instead of setting InfoTag to avoid database linking issues
+    # 1. Resolve the original handle to an IMAGE first.
+    # This satisfies the plugin request (preventing error popup) but avoids
+    # triggering the "Video Watched" logic because it's not a video.
+    icon_path = os.path.join(addon_dir, "resources", "images", "icon.jpg")
+    li_image = xbmcgui.ListItem(path=icon_path)
+    li_image.setInfo("pictures", {"mediatype": "picture"})
+    xbmcplugin.setResolvedUrl(handle, True, li_image)
+
+    # 2. Immediately hijack the player to play the actual video manually.
+    # This starts a new, detached session.
+    # We sleep briefly to ensure the resolution is processed by Kodi before overriding.
+    xbmc.sleep(200)
+
     li = xbmcgui.ListItem(label=title, path=video_path)
+    tag = li.getVideoInfoTag()
+    tag.setMediaType("video")
+    tag.setTitle(title)
 
-    # Prevent Kodi from scraping/saving metadata for this playback
-    li.setContentLookup(False)
-
-    xbmcplugin.setResolvedUrl(handle, True, li)
+    xbmc.Player().play(video_path, li)
 
 
 if __name__ == "__main__":
