@@ -158,16 +158,14 @@ def play_placeholder_video(
 
     log(f"Playing video: {video_path}")
 
-    xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
-
-    # We sleep briefly to ensure the resolution is processed by Kodi before overriding.
-    xbmc.sleep(200)
-
+    # Standard resolution to the video file.
+    # We rely on TMDbHelper's "is_resolvable: false" (in helparr.json) to separate
+    # this playback from the original library item's watched status.
     li = xbmcgui.ListItem(label=title, path=video_path)
     tag = li.getVideoInfoTag()
     tag.setMediaType("video")
     tag.setTitle(title)
-    xbmc.Player().play(video_path, li)
+    xbmcplugin.setResolvedUrl(handle, True, li)
 
 
 if __name__ == "__main__":
