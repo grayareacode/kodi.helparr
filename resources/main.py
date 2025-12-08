@@ -135,7 +135,6 @@ def play_placeholder_video(
     images_dir = os.path.join(addon_dir, "resources", "images")
     video_path = None
 
-    # Use os module for local directory operations as xbmcvfs can be inconsistent with absolute paths
     if os.path.exists(images_dir):
         try:
             files = os.listdir(images_dir)
@@ -154,22 +153,13 @@ def play_placeholder_video(
         log(f"Images directory does not exist: {images_dir}", xbmc.LOGERROR)
 
     if not video_path:
-        log("No downloading video found!", xbmc.LOGERROR)
-        notify("No downloading video found!", icon=xbmcgui.NOTIFICATION_ERROR)
-        xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+        # Don't worry about it, we'll still notify
         return
 
     log(f"Playing video: {video_path}")
-    # 1. Resolve the original handle to an IMAGE first.
-    # This satisfies the plugin request (preventing error popup) but avoids
-    # triggering the "Video Watched" logic because it's not a video.
-    icon_path = os.path.join(addon_dir, "resources", "images", "icon.jpg")
-    li_image = xbmcgui.ListItem(path=icon_path)
-    li_image.setInfo("pictures", {"mediatype": "picture"})
-    xbmcplugin.setResolvedUrl(handle, True, li_image)
 
-    # 2. Immediately hijack the player to play the actual video manually.
-    # This starts a new, detached session.
+    xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+
     # We sleep briefly to ensure the resolution is processed by Kodi before overriding.
     xbmc.sleep(200)
 
@@ -177,7 +167,6 @@ def play_placeholder_video(
     tag = li.getVideoInfoTag()
     tag.setMediaType("video")
     tag.setTitle(title)
-
     xbmc.Player().play(video_path, li)
 
 
